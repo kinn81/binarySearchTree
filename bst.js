@@ -1,5 +1,41 @@
 import { sort } from "./mergeSort.js";
 
+class Node {
+  #left;
+  #right;
+  #value;
+
+  constructor(value) {
+    this.#value = value;
+    this.#left = null;
+    this.#right = null;
+  }
+
+  set left(node) {
+    this.#left = node;
+  }
+
+  set right(node) {
+    this.#right = node;
+  }
+
+  set value(value) {
+    this.#value = value;
+  }
+
+  get left() {
+    return this.#left;
+  }
+
+  get right() {
+    return this.#right;
+  }
+
+  get value() {
+    return this.#value;
+  }
+}
+
 class Tree {
   #input;
   #root;
@@ -95,40 +131,71 @@ class Tree {
   }
 
   //Iterative level-order traversal
-  levelOrderIter(node = this.root) {
+  levelOrderIter(node = this.root, func = null, retArr = []) {
     //Initially enqueue root node
     let queue = [node];
     while (queue.length > 0) {
       //Take first item from queue
       //Print node
       let currNode = queue.shift();
-      console.log(currNode.value);
+      retArr.push(currNode.value);
+      if (func !== null) func(currNode);
       //Enqueue child nodes
       if (currNode.left !== null) queue.push(currNode.left);
       if (currNode.right !== null) queue.push(currNode.right);
     }
+    if (func == null) return retArr;
   }
 
   //Recursive level-order traversal
-  levelOrderRec(queue = [this.root]) {
+  levelOrderRec(queue = [this.root], func = null, retArr = []) {
     if (queue.length < 1) return;
 
     let childList = [];
     for (let currNode of queue) {
-      console.log(currNode.value);
+      retArr.push(currNode.value);
+      if (func !== null) func(currNode);
       if (currNode.left !== null) childList.push(currNode.left);
       if (currNode.right !== null) childList.push(currNode.right);
     }
-    this.levelOrderRec(childList);
+    this.levelOrderRec(childList, func, retArr);
+    if (func == null) return retArr;
   }
 
-  //Traverse tree in respective order, pass each node to the function argument
-  inorder(func) {}
-  preorder(func) {}
-  postorder(func) {}
+  //Traverse tree in respective order, pass each node to the function argument, or return values array
+  inorder(node = this.root, func = null, retArr = []) {
+    if (node == null) return;
+    this.inorder(node.left, func, retArr);
+    retArr.push(node.value);
+    if (func != null) func(node);
+    this.inorder(node.right, func, retArr);
+    if (func == null) return retArr;
+  }
+  preorder(node = this.root, func = null, retArr = []) {
+    if (node == null) return;
+    retArr.push(node.value);
+    if (func != null) func(node);
+    this.preorder(node.left, func, retArr);
+    this.preorder(node.right, func, retArr);
+    if (func == null) return retArr;
+  }
+  postorder(node = this.root, func = null, retArr = []) {
+    if (node == null) return;
+    this.postorder(node.left, func, retArr);
+    this.postorder(node.right, func, retArr);
+    retArr.push(node.value);
+    if (func != null) func(node);
+    if (func == null) return retArr;
+  }
 
-  //Searches tree, returns height of node passed in (distance from most furthest leaf)
-  height(node) {}
+  //Searches tree, returns height of node passed in (distance to most furthest leaf)
+  height(node, start = node.value) {
+    if (node == null) return 0;
+    let leftHeight = this.height(node.left, start);
+    let rightHeight = this.height(node.right, start);
+    let maxVal = Math.max(leftHeight, rightHeight);
+    return node.value == start ? maxVal : maxVal + 1;
+  }
 
   //Searches tree, returns depth of node passed in (distance from root)
   depth(node) {}
@@ -138,42 +205,6 @@ class Tree {
 
   //Rebalances an unbalanced tree
   rebalance(tree) {}
-}
-
-class Node {
-  #left;
-  #right;
-  #value;
-
-  constructor(value) {
-    this.#value = value;
-    this.#left = null;
-    this.#right = null;
-  }
-
-  set left(node) {
-    this.#left = node;
-  }
-
-  set right(node) {
-    this.#right = node;
-  }
-
-  set value(value) {
-    this.#value = value;
-  }
-
-  get left() {
-    return this.#left;
-  }
-
-  get right() {
-    return this.#right;
-  }
-
-  get value() {
-    return this.#value;
-  }
 }
 
 //Prints the BST
@@ -195,10 +226,18 @@ const prettyPrint = (node, prefix = "", isLeft = true) => {
 let tree = new Tree([1, 2, 3, 4, 5, 6, 7, 8, 9]);
 tree.buildTree();
 prettyPrint(tree.root);
-tree.levelOrderRec();
+//console.log(tree.levelOrderRec());
+//console.log(tree.levelOrderIter());
+//console.log(tree.inorder());
+//console.log(tree.preorder());
+//console.log(tree.postorder());
 
+console.log(tree.height(tree.root));
 //prettyPrint(tree.find(8));
 //tree.insert(10);
+//tree.insert(11);
+//tree.insert(12);
 //prettyPrint(tree.root);
+//console.log(tree.height(tree.root));
 //tree.delete(8);
 //prettyPrint(tree.root);
