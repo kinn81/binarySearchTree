@@ -41,11 +41,12 @@ class Tree {
   #root;
 
   constructor(dataArray) {
-    this.#input = dataArray;
+    this.#input = sort(dataArray);
+    this.buildTree();
   }
 
   //Takes sorted array, builds BST, returns root node
-  buildTree(input = this.input, start = 0, end = this.input.length - 1) {
+  buildTree(input = this.input, start = 0, end = input.length - 1) {
     if (start > end) return null;
     let mid = Math.round((start + end) / 2);
     let root = new Node();
@@ -58,6 +59,10 @@ class Tree {
 
   get input() {
     return this.#input;
+  }
+
+  set input(input) {
+    this.#input = input;
   }
 
   get root() {
@@ -79,6 +84,7 @@ class Tree {
     } else if (value > root.value) {
       root.right = this.insert(value, root.right);
     }
+    this.input = this.inorder();
     return root;
   }
 
@@ -105,6 +111,7 @@ class Tree {
       //Now delete the inorder successor
       root.right = this.delete(root.value, root.right);
     }
+    this.input = this.inorder();
     return root;
   }
 
@@ -189,7 +196,7 @@ class Tree {
   }
 
   //Searches tree, returns height of node passed in (distance to most furthest leaf)
-  height(node, start = node.value) {
+  height(node, start = node == null ? null : node.value) {
     if (node == null) return 0;
     let leftHeight = this.height(node.left, start);
     let rightHeight = this.height(node.right, start);
@@ -198,13 +205,39 @@ class Tree {
   }
 
   //Searches tree, returns depth of node passed in (distance from root)
-  depth(node) {}
+  depth(searchNode, root = this.root) {
+    if (root == null) return 0;
+    if (searchNode.value == root.value) return 1;
+    let leftDepth = this.depth(searchNode, root.left);
+    if (leftDepth > 0) {
+      return root.value == this.root.value ? leftDepth : leftDepth + 1;
+    }
+    let rightDepth = this.depth(searchNode, root.right);
+    if (rightDepth > 0) {
+      return root.value == this.root.value ? rightDepth : rightDepth + 1;
+    }
+    return -1;
+  }
 
   //Checks that left and right sides are balanced (height no more than 1 difference)
-  isbalanced() {}
+  isbalanced(root = this.root) {
+    if (root == null) return true;
+    let leftHeight = this.height(root.left);
+    let rightHeight = this.height(root.right);
+    if (
+      Math.abs(leftHeight - rightHeight) <= 1 &&
+      this.isbalanced(root.left) &&
+      this.isbalanced(root.right)
+    ) {
+      return true;
+    }
+    return false;
+  }
 
   //Rebalances an unbalanced tree
-  rebalance(tree) {}
+  rebalance() {
+    this.buildTree(this.inorder());
+  }
 }
 
 //Prints the BST
@@ -221,23 +254,24 @@ const prettyPrint = (node, prefix = "", isLeft = true) => {
   }
 };
 
-//console.log(sort([100, 10, 1, 22, 3]));
+//Driver script
+let tree = new Tree([120, 98, 1, 50, 62, 34, 24, 2, 9]);
 
-let tree = new Tree([1, 2, 3, 4, 5, 6, 7, 8, 9]);
-tree.buildTree();
-prettyPrint(tree.root);
-//console.log(tree.levelOrderRec());
-//console.log(tree.levelOrderIter());
-//console.log(tree.inorder());
-//console.log(tree.preorder());
-//console.log(tree.postorder());
+console.log("Is balanced?: " + tree.isbalanced());
 
-console.log(tree.height(tree.root));
-//prettyPrint(tree.find(8));
-//tree.insert(10);
-//tree.insert(11);
-//tree.insert(12);
-//prettyPrint(tree.root);
-//console.log(tree.height(tree.root));
-//tree.delete(8);
-//prettyPrint(tree.root);
+console.log("Levelorder: " + tree.levelOrderRec());
+console.log("Preorder: " + tree.preorder());
+console.log("Postorder: " + tree.postorder());
+console.log("Inorder: " + tree.inorder());
+
+tree.insert(422);
+tree.insert(132);
+tree.insert(122);
+console.log("Is balanced?: " + tree.isbalanced());
+
+tree.rebalance();
+console.log("Is balanced?: " + tree.isbalanced());
+console.log("Levelorder: " + tree.levelOrderRec());
+console.log("Preorder: " + tree.preorder());
+console.log("Postorder: " + tree.postorder());
+console.log("Inorder: " + tree.inorder());
